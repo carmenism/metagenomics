@@ -3,6 +3,33 @@
 import sqlite3
 import string
 
+class ColumnDefinition:
+    def __init__(self, col_name, col_type):
+        self.name = col_name
+        self.type = col_type
+        
+    def createString(self):
+        return self.name + " " + self.type
+
+class ClassDefinition:
+    def __init__(self, table_name, table_cols, table_primary_key = None):
+        self.name = table_name
+        self.cols = table_cols
+        self.primary_key = table_primary_key
+        
+    def createString(self):
+        colStr = [col.createString() for col in cols].join(", ")
+        
+        createStr = "CREATE TABLE " + self.name + " (" + colStr + " "
+        
+        if self.primary_key is not None:
+            return createStr + ", " + primary_key + ")"
+        
+        return createStr + ")"
+    
+    def dropString(self):
+        return "DROP TABLE IF EXISTS " + self.name
+
 attrGene = "gbkey=Gene"
 attrGenome = "gbkey=Src"
 attrGeneId = "Dbxref=GeneID:"
@@ -21,17 +48,20 @@ gffColumnStrand = 6
 gffColumnFrame = 7
 gffColumnAttr = 8
 
-tblSpecies = "tblSpecies"
-tblSpecies_ncid = "ncid"
-tblSpecies_tax_id = "tax_id"
-tblSpecies_taxonomy = "taxonomy"
+tblSpecies_col_ncid = ColumnDefinition("ncid", "VARCHAR(20) PRIMARY KEY")
+tblSpecies_col_tax_id = ColumnDefinition("tax_id", "VARCHAR(14)")
+tblSpecies_col_taxonomy = ColumnDefinition("taxonomy", "VARCHAR(2500)")
+tblSpecies_cols = [tblSpecies_col_ncid, tblSpecies_col_tax_id, tblSpecies_col_taxonomy]
+tblSpecies = TableDefinition("tblSpecies", tblSpecies_cols)
 
-tblGene = "tblGene"
-tblGene_ncid = "ncid"
-tblGene_gene_id = "gene_id"
-tblGene_start = "start"
-tblGene_stop = "stop"
-tblGene_function = "function"
+tblGene_col_ncid = ColumnDefinition("ncid", "VARCHAR(20)")
+tblGene_col_gene_id = ColumnDefinition("gene_id", "VARCHAR(14)")
+tblGene_col_start = ColumnDefinition("start", "INT")
+tblGene_col_stop = ColumnDefinition("stop", "INT")
+tblGene_col_function = ColumnDefinition("function", "VARCHAR(2500)")
+tblGene_col_cog_id = ColumnDefinition("cog_id", "VARCHAR(20)")
+tblGene_cols = [tblGene_col_ncid, tblGene_col_gene_id, tblGene_col_start, tblGene_col_stop, tblGene_col_function, tblGene_col_cog_id]
+tblGene = ColumnDefinition("tblGene", tblGene_cols, "PRIMARY KEY(" + tblGene_col_ncid + ", " + tblGene_col_gene_id + ")")
 
 def isComment(line):
     return line.startswith("#")
@@ -57,32 +87,26 @@ def extractTaxID(attributes):
     return None
 
 def addToSpeciesTable(cursor, ncID, taxID):
-    sql = "INSERT INTO " + tblSpecies + " (" + tblSpecies_ncid + ", " + tblSpecies_tax_id + ") VALUES('" + ncID + "', '" + taxID +"')"
+    sql = "INSERT INTO " + tblSpecies + " (" + tblSpecies_col_ncid + ", " + tblSpecies_col_tax_id + ") VALUES('" + ncID + "', '" + taxID +"')"
     
     cursor.execute(sql)
     
 def addToGeneTable(cursor, ncID, geneID, start, stop):
-    sql = "INSERT INTO " + tblGene + " (" + tblGene_ncid + ", " + tblGene_gene_id + ", " + tblGene_start + ", " + tblGene_stop + ") VALUES('" + ncID + "', '" + geneID +"', "+ start + ", " + stop + ")"
+    sql = "INSERT INTO " + tblGene + " (" + tblGene_col_ncid + ", " + tblGene_col_gene_id + ", " + tblGene_col_start + ", " + tblGene_col_stop + ") VALUES('" + ncID + "', '" + geneID +"', "+ start + ", " + stop + ")"
     
     cursor.execute(sql)
     
-def dropTable(cursor, tableName):
-    sql = "DROP TABLE IF EXISTS " + tableName
+def dropTable(cursor, table):
+    sql = table.dropString()
 
     cursor.execute(sql)
     
-def createSpeciesTable(cursor):
-    sql = "CREATE TABLE " + tblSpecies + " (" + tblSpecies_ncid + " VARCHAR(20) PRIMARY KEY, " + tblSpecies_tax_id + " VARCHAR(14), " + tblSpecies_taxonomy + " VARCHAR(2500) ) WITHOUT ROWID "
-
-    print sql
-    cursor.execute(sql)
-    
-def createGeneTable(cursor):
-    sql = "CREATE TABLE " + tblGene + " (" + tblGene_ncid + " VARCHAR(20), " + tblGene_gene_id + " VARCHAR(14), " + tblGene_start + " INT, " + tblGene_stop + " INT, " + tblGene_function + " VARCHAR(2500), PRIMARY KEY(" + tblGene_ncid + ", " + tblGene_gene_id + ") ) WITHOUT ROWID "
+def createTable(cursor, table):
+    sql = table.createString()
 
     print sql
     cursor.execute(sql)
-
+    
 print sqlite3.sqlite_version
 
 conn = sqlite3.connect("Metagenomics.db")
@@ -91,8 +115,8 @@ cursor = conn.cursor()
 dropTable(cursor, tblSpecies)
 dropTable(cursor, tblGene)
 
-createSpeciesTable(cursor)
-createGeneTable(cursor)
+createTable(cursor, tblSpecies)
+createTable(cursor, tblGene)
 
 f = open("NC_017911.gff")
 
