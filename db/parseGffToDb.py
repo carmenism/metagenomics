@@ -2,6 +2,7 @@
 
 import sqlite3
 import string
+import sys
 
 class ColumnDefinition:
     def __init__(self, col_name, col_type):
@@ -106,7 +107,13 @@ def createTable(cursor, table):
 
     print sql
     cursor.execute(sql)
-    
+
+if (len(sys.argv) >= 1):
+    print "Please specify a reference filename as a command line argument."
+    exit(1)
+
+referenceFilename = sys.argv[1]
+
 print sqlite3.sqlite_version
 
 conn = sqlite3.connect("Metagenomics.db")
@@ -118,7 +125,7 @@ dropTable(cursor, tblGene)
 createTable(cursor, tblSpecies)
 createTable(cursor, tblGene)
 
-f = open("NC_017911.gff")
+f = open(referenceFilename) # eg "NC_017911.gff"
 
 for line in f.readlines():
     if not isComment(line):
