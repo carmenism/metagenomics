@@ -11,19 +11,19 @@ class ColumnDefinition:
     def createString(self):
         return self.name + " " + self.type
 
-class ClassDefinition:
+class TableDefinition:
     def __init__(self, table_name, table_cols, table_primary_key = None):
         self.name = table_name
         self.cols = table_cols
         self.primary_key = table_primary_key
         
     def createString(self):
-        colStr = [col.createString() for col in cols].join(", ")
+        colStr = ", ".join([col.createString() for col in self.cols])
         
         createStr = "CREATE TABLE " + self.name + " (" + colStr + " "
         
         if self.primary_key is not None:
-            return createStr + ", " + primary_key + ")"
+            return createStr + ", " + self.primary_key + ")"
         
         return createStr + ")"
     
@@ -61,7 +61,7 @@ tblGene_col_stop = ColumnDefinition("stop", "INT")
 tblGene_col_function = ColumnDefinition("function", "VARCHAR(2500)")
 tblGene_col_cog_id = ColumnDefinition("cog_id", "VARCHAR(20)")
 tblGene_cols = [tblGene_col_ncid, tblGene_col_gene_id, tblGene_col_start, tblGene_col_stop, tblGene_col_function, tblGene_col_cog_id]
-tblGene = ColumnDefinition("tblGene", tblGene_cols, "PRIMARY KEY(" + tblGene_col_ncid + ", " + tblGene_col_gene_id + ")")
+tblGene = TableDefinition("tblGene", tblGene_cols, "PRIMARY KEY(" + tblGene_col_ncid.name + ", " + tblGene_col_gene_id.name + ")")
 
 def isComment(line):
     return line.startswith("#")
@@ -87,12 +87,12 @@ def extractTaxID(attributes):
     return None
 
 def addToSpeciesTable(cursor, ncID, taxID):
-    sql = "INSERT INTO " + tblSpecies + " (" + tblSpecies_col_ncid + ", " + tblSpecies_col_tax_id + ") VALUES('" + ncID + "', '" + taxID +"')"
+    sql = "INSERT INTO " + tblSpecies.name + " (" + tblSpecies_col_ncid.name + ", " + tblSpecies_col_tax_id.name + ") VALUES('" + ncID + "', '" + taxID +"')"
     
     cursor.execute(sql)
     
 def addToGeneTable(cursor, ncID, geneID, start, stop):
-    sql = "INSERT INTO " + tblGene + " (" + tblGene_col_ncid + ", " + tblGene_col_gene_id + ", " + tblGene_col_start + ", " + tblGene_col_stop + ") VALUES('" + ncID + "', '" + geneID +"', "+ start + ", " + stop + ")"
+    sql = "INSERT INTO " + tblGene.name + " (" + tblGene_col_ncid.name + ", " + tblGene_col_gene_id.name + ", " + tblGene_col_start.name + ", " + tblGene_col_stop.name + ") VALUES('" + ncID + "', '" + geneID +"', "+ start + ", " + stop + ")"
     
     cursor.execute(sql)
     
