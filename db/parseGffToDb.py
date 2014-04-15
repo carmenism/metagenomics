@@ -23,21 +23,6 @@ gffColumnStrand = 6
 gffColumnFrame = 7
 gffColumnAttr = 8
 
-tblSpecies_col_ncid = dbDef.ColumnDefinition("ncid", "VARCHAR(20) PRIMARY KEY")
-tblSpecies_col_tax_id = dbDef.ColumnDefinition("tax_id", "VARCHAR(14)")
-tblSpecies_col_taxonomy = dbDef.ColumnDefinition("taxonomy", "VARCHAR(2500)")
-tblSpecies_cols = [tblSpecies_col_ncid, tblSpecies_col_tax_id, tblSpecies_col_taxonomy]
-tblSpecies = dbDef.TableDefinition("tblSpecies", tblSpecies_cols)
-
-tblGene_col_ncid = dbDef.ColumnDefinition("ncid", "VARCHAR(20)")
-tblGene_col_gene_id = dbDef.ColumnDefinition("gene_id", "VARCHAR(14)")
-tblGene_col_start = dbDef.ColumnDefinition("start", "INT")
-tblGene_col_stop = dbDef.ColumnDefinition("stop", "INT")
-tblGene_col_function = dbDef.ColumnDefinition("function", "VARCHAR(2500)")
-tblGene_col_cog_id = dbDef.ColumnDefinition("cog_id", "VARCHAR(20)")
-tblGene_cols = [tblGene_col_ncid, tblGene_col_gene_id, tblGene_col_start, tblGene_col_stop, tblGene_col_function, tblGene_col_cog_id]
-tblGene = dbDef.TableDefinition("tblGene", tblGene_cols, "PRIMARY KEY(" + tblGene_col_ncid.name + ", " + tblGene_col_gene_id.name + ")")
-
 def isComment(line):
     return line.startswith("#")
 
@@ -62,12 +47,12 @@ def extractTaxID(attributes):
     return None
 
 def addToSpeciesTable(cursor, ncID, taxID):
-    sql = "INSERT INTO " + tblSpecies.name + " (" + tblSpecies_col_ncid.name + ", " + tblSpecies_col_tax_id.name + ") VALUES('" + ncID + "', '" + taxID +"')"
+    sql = "INSERT INTO " + dbDef.tblSpecies.name + " (" + dbDef.tblSpecies_col_ncid.name + ", " + dbDef.tblSpecies_col_tax_id.name + ") VALUES('" + ncID + "', '" + taxID +"')"
     
     cursor.execute(sql)
     
 def addToGeneTable(cursor, ncID, geneID, start, stop):
-    sql = "INSERT INTO " + tblGene.name + " (" + tblGene_col_ncid.name + ", " + tblGene_col_gene_id.name + ", " + tblGene_col_start.name + ", " + tblGene_col_stop.name + ") VALUES('" + ncID + "', '" + geneID +"', "+ start + ", " + stop + ")"
+    sql = "INSERT INTO " + dbDef.tblGene.name + " (" + dbDef.tblGene_col_ncid.name + ", " + dbDef.tblGene_col_gene_id.name + ", " + dbDef.tblGene_col_start.name + ", " + dbDef.tblGene_col_stop.name + ") VALUES('" + ncID + "', '" + geneID +"', "+ start + ", " + stop + ")"
     
     cursor.execute(sql)
 
@@ -82,13 +67,13 @@ print sqlite3.sqlite_version
 conn = sqlite3.connect("Metagenomics.db")
 cursor = conn.cursor()
 
-dbDef.dropTable(cursor, tblSpecies)
-dbDef.dropTable(cursor, tblGene)
+dbDef.dropTable(cursor, dbDef.tblSpecies)
+dbDef.dropTable(cursor, dbDef.tblGene)
 
-dbDef.createTable(cursor, tblSpecies)
-dbDef.createTable(cursor, tblGene)
+dbDef.createTable(cursor, dbDef.tblSpecies)
+dbDef.createTable(cursor, dbDef.tblGene)
 
-f = open(referenceFilename) # eg "NC_017911.gff"
+f = open(referenceFilename, "r") # eg "NC_017911.gff"
 
 for line in f.readlines():
     if not isComment(line):
@@ -111,6 +96,8 @@ for line in f.readlines():
             if geneID is not None:
                 # MAKE AN ENTRY IN GENE TABLE
                 addToGeneTable(cursor, ncID, geneID, start, stop)
+
+f.close()
 
 conn.commit()
 conn.close()
