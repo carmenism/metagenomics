@@ -5,6 +5,7 @@ import os.path
 import urllib
 import zipfile
 import dbDef
+import sqlite3;
 
 taxdmpZip = 'taxdmp.zip'
 nodesFilename = 'nodes.dmp'
@@ -24,22 +25,23 @@ def addToTaxonomyTable(cursor, taxID, taxRank, parentTaxID):
     cursor.execute(sql)
     
 def updateName(cursor, taxID, taxName):
+    taxName = taxName.replace("'", "''")
     sql = "UPDATE " + dbDef.tblTaxonomy.name + " SET " + dbDef.tblTaxonomy_col_tax_name.name + " = '" + taxName + "' WHERE " + dbDef.tblTaxonomy_col_tax_id.name + " = '" + taxID + "'"
-
+    print sql;
     cursor.execute(sql)
 
 #urllib.urlretrieve('ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip', taxdmpZip)
 
 zfile = zipfile.ZipFile(taxdmpZip)
 
-zfile.extract(nodesFilename, nodesFilename)
-zfile.extract(namesFilename, namesFilename)
+zfile.extract(nodesFilename, "")
+zfile.extract(namesFilename, "")
 
 conn = sqlite3.connect("Metagenomics.db")
 cursor = conn.cursor()
 
-dbDef.dropTable(cursor, tblTaxonomy)
-dbDef.createTable(cursor, tblTaxonomy)
+dbDef.dropTable(cursor, dbDef.tblTaxonomy)
+dbDef.createTable(cursor, dbDef.tblTaxonomy)
 
 fNode = open(nodesFilename, 'r')
 
@@ -55,7 +57,7 @@ for line in fNode.readlines():
     
 fNode.close()
 
-fName = open(nodesFilename, 'r')
+fName = open(namesFilename, 'r')
 
 for line in fName.readlines():
     tokens = line.split("|")

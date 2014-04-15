@@ -56,7 +56,7 @@ def addToGeneTable(cursor, ncID, geneID, start, stop):
     
     cursor.execute(sql)
 
-if (len(sys.argv) >= 1):
+if (len(sys.argv) <= 1):
     print "Please specify a reference filename as a command line argument."
     exit(1)
 
