@@ -51,8 +51,9 @@ gffColumnAttr = 8
 
 tblSpecies_col_ncid = ColumnDefinition("ncid", "VARCHAR(20) PRIMARY KEY")
 tblSpecies_col_tax_id = ColumnDefinition("tax_id", "VARCHAR(14)")
-tblSpecies_col_taxonomy = ColumnDefinition("taxonomy", "VARCHAR(2500)")
-tblSpecies_cols = [tblSpecies_col_ncid, tblSpecies_col_tax_id, tblSpecies_col_taxonomy]
+tblSpecies_col_tax_rank = ColumnDefinition("tax_rank", "VARCHAR(40)")
+tblSpecies_col_parent_tax_id = ColumnDefinition("parent_tax_id", "VARCHAR(14)")
+tblSpecies_cols = [tblSpecies_col_ncid, tblSpecies_col_tax_id, tblSpecies_col_tax_rank, tblSpecies_col_parent_tax_id]
 tblSpecies = TableDefinition("tblSpecies", tblSpecies_cols)
 
 tblGene_col_ncid = ColumnDefinition("ncid", "VARCHAR(20)")
