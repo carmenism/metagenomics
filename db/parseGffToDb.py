@@ -49,12 +49,26 @@ def extractTaxID(attributes):
 def addToSpeciesTable(cursor, ncID, taxID):
     sql = "INSERT INTO " + dbDef.tblSpecies.name + " (" + dbDef.tblSpecies_col_ncid.name + ", " + dbDef.tblSpecies_col_tax_id.name + ") VALUES('" + ncID + "', '" + taxID +"')"
     
-    cursor.execute(sql)
+    try:
+        cursor.execute(sql)
+    except sqlite3.IntegrityError:
+        return False
+    
+    return True
     
 def addToGeneTable(cursor, ncID, geneID, start, stop):
     sql = "INSERT INTO " + dbDef.tblGene.name + " (" + dbDef.tblGene_col_ncid.name + ", " + dbDef.tblGene_col_gene_id.name + ", " + dbDef.tblGene_col_start.name + ", " + dbDef.tblGene_col_stop.name + ") VALUES('" + ncID + "', '" + geneID +"', "+ start + ", " + stop + ")"
     
-    cursor.execute(sql)
+    try:
+        cursor.execute(sql)
+    except sqlite3.IntegrityError:
+        return False
+    
+    return True
+
+def writeToLog(logFile, message):
+    print message
+    logfile.write(message)
 
 if (len(sys.argv) <= 1):
     print "Please specify a reference filename as a command line argument."
@@ -77,10 +91,19 @@ f = open(referenceFilename, "r") # eg "NC_017911.gff"
 
 logFile = open("dbCreationFile.log", "w")
 
-lineNumber = 1
+lineNumber = 0
+successGene = 0
+successSpecies = 0
+duplicateGene = 0
+duplicateSpecies = 0
+missingAttrGene = 0
+missingAttrSpecies = 0
+problemLines = 0
 
 for line in f.readlines():
     if not isComment(line):
+        lineNumber = lineNumber + 1
+        
         try:
             tokens = line.split("\t")
             ncID = tokens[gffColumnSeqname]
@@ -94,26 +117,43 @@ for line in f.readlines():
                 
                 if taxID is not None:
                     # MAKE AN ENTRY IN SPECIES TABLE
-                    addToSpeciesTable(cursor, ncID, taxID)
+                    success = addToSpeciesTable(cursor, ncID, taxID)
+                    
+                    if success:
+                        successSpecies = successSpecies + 1
+                    else:
+                        writeToLog(logFile, "Species duplicate, line " + str(lineNumber) + ": " + line)
+                        duplicateSpecies = duplicateSpecies + 1
                 else:
-                    msg = "Species is missing taxid, line " + str(lineNumber) + ": " + line
-                    logFile.write(msg + "\n");
-                    print msg;
+                    writeToLog(logFile, "Species is missing taxid, line " + str(lineNumber) + ": " + line)
+                    missingAttrSpecies = missingAttrSpecies + 1
             elif isGene(feature):
                 geneID = extractGeneID(attributes)
                 
                 if geneID is not None:
                     # MAKE AN ENTRY IN GENE TABLE
-                    addToGeneTable(cursor, ncID, geneID, start, stop)
+                    success = addToGeneTable(cursor, ncID, geneID, start, stop)
+                    
+                    if success:
+                        successGene = successGene + 1
+                    else:
+                        writeToLog(logFile, "Gene duplicate, line " + str(lineNumber) + ": " + line)
+                        duplicateGene = duplicateGene + 1
                 else:
-                    msg = "Gene is missing geneid, line " + str(lineNumber) + ": " + line
-                    logFile.write(msg + "\n");
-                    print msg;
-        except Error:
-            msg = "Problem with line " + str(lineNumber) + ": " + line
-            logFile.write(msg + "\n");
-            print msg;
-    lineNumber = lineNumber + 1
+                    writeToLog(logFile, "Gene is missing geneid, line " + str(lineNumber) + ": " + line)
+                    missingAttrGene = missingAttrGene + 1
+        except IndexError:
+            writeToLog(logFile, "Problem with line " + str(lineNumber) + ": " + line)
+            problemLines = problemLines + 1
+
+print "Non comment lines: " + str(lineNumber)
+print "Problem lines: " + str(problemLines)
+print "Success genes: " + str(successGene)
+print "Success species: " + str(successSpecies)
+print "Duplicate genes: " + str(duplicateGene)
+print "Duplicate species: " + str(duplicateSpecies)
+print "Genes missing attributes: " + str(missingAttrGene)
+print "Species missing attributes: " + str(missingAttrSpecies)
 
 f.close()
 logFile.close()
