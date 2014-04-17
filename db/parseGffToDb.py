@@ -75,29 +75,48 @@ dbDef.createTable(cursor, dbDef.tblGene)
 
 f = open(referenceFilename, "r") # eg "NC_017911.gff"
 
+logFile = open("dbCreationFile.log", "w")
+
+lineNumber = 1
+
 for line in f.readlines():
     if not isComment(line):
-        tokens = line.split("\t")
-        ncID = tokens[gffColumnSeqname]
-        feature = tokens[gffColumnFeature]
-        start = tokens[gffColumnStart]
-        stop = tokens[gffColumnEnd]
-        attributes = tokens[gffColumnAttr].split(";")
-        
-        if isGenome(feature):
-            taxID = extractTaxID(attributes)
+        try:
+            tokens = line.split("\t")
+            ncID = tokens[gffColumnSeqname]
+            feature = tokens[gffColumnFeature]
+            start = tokens[gffColumnStart]
+            stop = tokens[gffColumnEnd]
+            attributes = tokens[gffColumnAttr].split(";")
             
-            if taxID is not None:
-                # MAKE AN ENTRY IN SPECIES TABLE
-                addToSpeciesTable(cursor, ncID, taxID)
-        elif isGene(feature):
-            geneID = extractGeneID(attributes)
-            
-            if geneID is not None:
-                # MAKE AN ENTRY IN GENE TABLE
-                addToGeneTable(cursor, ncID, geneID, start, stop)
+            if isGenome(feature):
+                taxID = extractTaxID(attributes)
+                
+                if taxID is not None:
+                    # MAKE AN ENTRY IN SPECIES TABLE
+                    addToSpeciesTable(cursor, ncID, taxID)
+                else:
+                    msg = "Species is missing taxid, line " + str(lineNumber) + ": " + line
+                    logFile.write(msg + "\n");
+                    print msg;
+            elif isGene(feature):
+                geneID = extractGeneID(attributes)
+                
+                if geneID is not None:
+                    # MAKE AN ENTRY IN GENE TABLE
+                    addToGeneTable(cursor, ncID, geneID, start, stop)
+                else:
+                    msg = "Gene is missing geneid, line " + str(lineNumber) + ": " + line
+                    logFile.write(msg + "\n");
+                    print msg;
+        except Error:
+            msg = "Problem with line " + str(lineNumber) + ": " + line
+            logFile.write(msg + "\n");
+            print msg;
+    lineNumber = lineNumber + 1
 
 f.close()
+logFile.close()
 
 conn.commit()
 conn.close()
