@@ -66,7 +66,7 @@ def addToGeneTable(cursor, ncID, geneID, start, stop):
     
     return True
 
-def writeToLog(logFile, message):
+def writeToLog(logfile, message):
     print message
     logfile.write(message)
 
