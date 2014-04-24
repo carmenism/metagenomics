@@ -5,7 +5,7 @@ import os.path
 import urllib
 import zipfile
 import dbDef
-import sqlite3;
+import sqlite3
 
 taxdmpZip = 'taxdmp.zip'
 nodesFilename = 'nodes.dmp'
