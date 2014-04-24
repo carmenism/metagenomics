@@ -63,11 +63,17 @@ def getAbbrTaxonomyFromTaxid(cursor, taxid):
     else:
         return None
 
+# Just a simple test to show the retrieval of a taxonomy
+
 conn = sqlite3.connect("Metagenomics.db")
 cursor = conn.cursor()
-print getParentTaxidFromTaxid(cursor,"58777")
-print getRankFromTaxid(cursor,"58777")
-print getNameFromTaxid(cursor,"58777")
-print getAbbrTaxonomyFromTaxid(cursor, "58777")
+
+taxid = "58777"
+
+print getParentTaxidFromTaxid(cursor, taxid)
+print getRankFromTaxid(cursor, taxid)
+print getNameFromTaxid(cursor, taxid)
+print getAbbrTaxonomyFromTaxid(cursor, taxid)
+
 conn.commit()
 conn.close()
