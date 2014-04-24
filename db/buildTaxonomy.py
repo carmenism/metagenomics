@@ -2,7 +2,7 @@
 import dbDef
 import sqlite3
 
-abbrRanks = ["domain", "kingdom", "phylum", "class", "order", "family", "genus", "species"]
+abbrRanks = ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 
 def getSingleFieldFromSql(cursor, sql):
     try:
