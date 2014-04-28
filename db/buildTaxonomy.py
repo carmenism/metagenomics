@@ -41,6 +41,7 @@ def getAbbrTaxonomyFromTaxidRecursive(cursor, taxid, taxList):
     name = getNameFromTaxid(cursor, taxid)
     
     if rank is None:
+        print "Not able to retrieve rank"
         return False
     
     if isPartOfAbbreviatedRank(rank):
@@ -49,6 +50,7 @@ def getAbbrTaxonomyFromTaxidRecursive(cursor, taxid, taxList):
     parentTaxid = getParentTaxidFromTaxid(cursor, taxid)
         
     if parentTaxid is None:
+        print "Not able to retrieve parent id"
         return False
         
     return getAbbrTaxonomyFromTaxidRecursive(cursor, parentTaxid, taxList)
@@ -56,23 +58,28 @@ def getAbbrTaxonomyFromTaxidRecursive(cursor, taxid, taxList):
 def getAbbrTaxonomyFromTaxid(cursor, taxid):
     taxList = []
 
+    if cursor is None:
+        print "Cursor was not defined"
+        return None
+
     completeAbbrTax = getAbbrTaxonomyFromTaxidRecursive(cursor, taxid, taxList)
 
     if completeAbbrTax:
         return taxList
     else:
+        print "Incomplete taxonomy"
         return None
 
 # Just a simple test to show the retrieval of a taxonomy
 
-conn = sqlite3.connect("Metagenomics.db")
-cursor = conn.cursor()
-taxid = "58777"
+#conn = sqlite3.connect("Metagenomics.db")
+#cursor = conn.cursor()
+#taxid = "58777"
 
-print getParentTaxidFromTaxid(cursor, taxid)
-print getRankFromTaxid(cursor, taxid)
-print getNameFromTaxid(cursor, taxid)
-print getAbbrTaxonomyFromTaxid(cursor, taxid)
+#print getParentTaxidFromTaxid(cursor, taxid)
+#print getRankFromTaxid(cursor, taxid)
+#print getNameFromTaxid(cursor, taxid)
+#print getAbbrTaxonomyFromTaxid(cursor, taxid)
 
-conn.commit()
-conn.close()
+#conn.commit()
+#conn.close()

@@ -17,8 +17,7 @@ def getCommonAncestor(speciesList):
             (otherTaxid, otherName, otherRank) = otherSpecies[level]
             
             if otherTaxid != firstTaxid:
-                keepLooking = False
-                level = level - 1
+                return speciesList[0][level - 1]
                 
         level = level + 1
         
@@ -33,14 +32,17 @@ cursor = conn.cursor()
 
 speciesList = []
 
-print buildTaxonomy.getAbbrTaxonomyFromTaxid(cursor, "58777")
-#print speciesA
-#speciesB = buildTaxonomy.getAbbrTaxonomyFromTaxid(cursor, "109777")
-#print speciesB
-#speciesList.append(speciesA)
-#speciesList.append(speciesB)
+print buildTaxonomy.isPartOfAbbreviatedRank("genus")
 
-#print getCommonAncestor(speciesList)
+speciesA =  buildTaxonomy.getAbbrTaxonomyFromTaxid(cursor, "58777")
+print speciesA
+speciesB = buildTaxonomy.getAbbrTaxonomyFromTaxid(cursor, "109777")
+print speciesB
+
+speciesList.append(speciesA)
+speciesList.append(speciesB)
+
+print getCommonAncestor(speciesList)
 
 conn.commit()
 conn.close()
