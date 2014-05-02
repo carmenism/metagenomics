@@ -5,23 +5,22 @@ import string
 import sys
 import dbDef
 
-attrGene = "gbkey=Gene"
-attrGenome = "gbkey=Src"
-attrGeneId = "Dbxref=GeneID:"
-attrTaxId = "Dbxref=taxon:"
+#attrGene = "gbkey=Gene"
+##ttrGenome = "gbkey=Src"
+#attrGeneId = "Dbxref=GeneID:"
+#attrTaxId = "Dbxref=taxon:"
 
-featureGenome = "region"
-featureGene = "gene"
+#featureGenome = "region"
+#featureGene = "gene"
 
-gffColumnSeqname = 0
-gffColumnSource = 1
-gffColumnFeature = 2
-gffColumnStart = 3
-gffColumnEnd = 4
-gffColumnScore = 5
-gffColumnStrand = 6
-gffColumnFrame = 7
-gffColumnAttr = 8
+gffColumnTaxId = 0
+gffColumnRefId = 1
+gffColumnStart = 2
+gffColumnEnd = 3
+gffColumnGeneId = 4
+gffColumnProteinId = 5
+gffColumnProduct = 6
+gffColumnGoNumbers = 7
 
 def isComment(line):
     return line.startswith("#")
@@ -106,42 +105,31 @@ for line in f.readlines():
         
         try:
             tokens = line.split("\t")
-            ncID = tokens[gffColumnSeqname]
-            feature = tokens[gffColumnFeature]
+            ncID = tokens[gffColumnRefId]
+            taxID = tokens[gffColumnTaxId]
             start = tokens[gffColumnStart]
             stop = tokens[gffColumnEnd]
-            attributes = tokens[gffColumnAttr].split(";")
+            geneID = tokens[gffColumnGeneId]
             
-            if isGenome(feature):
-                taxID = extractTaxID(attributes)
+            if taxID is not None:
+                # MAKE AN ENTRY IN SPECIES TABLE
+                success = addToSpeciesTable(cursor, ncID, taxID)
                 
-                if taxID is not None:
-                    # MAKE AN ENTRY IN SPECIES TABLE
-                    success = addToSpeciesTable(cursor, ncID, taxID)
-                    
-                    if success:
-                        successSpecies = successSpecies + 1
-                    else:
-                        writeToLog(logFile, "Species duplicate, line " + str(lineNumber) + ": " + line)
-                        duplicateSpecies = duplicateSpecies + 1
+                if success:
+                    successSpecies = successSpecies + 1
                 else:
-                    writeToLog(logFile, "Species is missing taxid, line " + str(lineNumber) + ": " + line)
-                    missingAttrSpecies = missingAttrSpecies + 1
-            elif isGene(feature):
-                geneID = extractGeneID(attributes)
+                    writeToLog(logFile, "Species duplicate, line " + str(lineNumber) + ": " + line)
+                    duplicateSpecies = duplicateSpecies + 1
                 
-                if geneID is not None:
-                    # MAKE AN ENTRY IN GENE TABLE
-                    success = addToGeneTable(cursor, ncID, geneID, start, stop)
-                    
-                    if success:
-                        successGene = successGene + 1
-                    else:
-                        writeToLog(logFile, "Gene duplicate, line " + str(lineNumber) + ": " + line)
-                        duplicateGene = duplicateGene + 1
+            if geneID is not None:
+                # MAKE AN ENTRY IN GENE TABLE
+                success = addToGeneTable(cursor, ncID, geneID, start, stop)
+                
+                if success:
+                    successGene = successGene + 1
                 else:
-                    writeToLog(logFile, "Gene is missing geneid, line " + str(lineNumber) + ": " + line)
-                    missingAttrGene = missingAttrGene + 1
+                    writeToLog(logFile, "Gene duplicate, line " + str(lineNumber) + ": " + line)
+                    duplicateGene = duplicateGene + 1
         except IndexError:
             writeToLog(logFile, "Problem with line " + str(lineNumber) + ": " + line)
             problemLines = problemLines + 1
