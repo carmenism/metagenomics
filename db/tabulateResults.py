@@ -38,38 +38,34 @@ def getTaxidFromNCID(cursor, ncid):
     
     return buildTaxonomy.getSingleFieldFromSql(cursor, sql)
 
-def createGenusSpeciesFile():
-    genusSpeciesFile = filename + '_genusSpecies.csv'
+def createLevelFile(level):
+    totalCount = 0
+    
+    levelFile = 'taxResults_' + level + '.csv'
     taxidsToDelete = []
     
-    with open(genusSpeciesFile, 'wb') as genusSpeciesCsv:
-        genusSpeciesCsvWriter = csv.writer(genusSpeciesCsv, delimiter=',', quotechar='"')
+    tmpList = ["Taxid","Name","Rank","Count"]
+    
+    with open(levelFile, 'wb') as levelCsv:
+        levelCsvWriter = csv.writer(levelCsv, delimiter=',', quotechar='"')
+        levelCsvWriter.writerow(tmpList)
         
         for taxid, tally in organismCount.iteritems():
-            if tally.rank == buildTaxonomy.abbrRanks[-1]: #if rank is species
-                #genusTax = buildTaxonomy.getParentTaxidFromTaxid(cursor, taxid)
-                
-                #genusName = organismCount[genusTax].name
-                genusSpeciesCsvWriter.writerow(tally.toList())
+            if tally.rank == level:
+                totalCount = totalCount + tally.count
+                levelCsvWriter.writerow(tally.toList())
                 
                 taxidsToDelete.append(taxid)
+    
+        tmpList = ["TOTAL","",level,totalCount]
+        levelCsvWriter.writerow(tmpList)
                 
-    for taxid in taxidsToDelete:
-        del organismCount[taxid]
+    #for taxid in taxidsToDelete:
+    #    del organismCount[taxid]
     
     return
  
-def createTaxonomyFile(level):
-    levelFile = filename + '_' + level + '.csv'
-    taxidsToDelete = []
-    
-    for taxid in taxidsToDelete:
-        del organismCount[taxid]
-    
-    
-    return
- 
-        
+   
 if len(sys.argv) == 1:
     print "This program requires a file to run"
 
@@ -96,7 +92,8 @@ for line in readFile.readlines():
 
 readFile.close()
 
-createGenusSpeciesFile()
+for level in buildTaxonomy.abbrRanks:
+    createLevelFile(level)
 
 conn.commit()
 conn.close()
