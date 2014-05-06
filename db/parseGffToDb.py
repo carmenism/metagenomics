@@ -92,7 +92,6 @@ missingAttrSpecies = 0
 problemLines = 0
 
 for line in f.readlines():
-    print line + "\n"
     if not isComment(line):
         lineNumber = lineNumber + 1
         
