@@ -5,14 +5,6 @@ import string
 import sys
 import dbDef
 
-#attrGene = "gbkey=Gene"
-##ttrGenome = "gbkey=Src"
-#attrGeneId = "Dbxref=GeneID:"
-#attrTaxId = "Dbxref=taxon:"
-
-#featureGenome = "region"
-#featureGene = "gene"
-
 gffColumnTaxId = 0
 gffColumnRefId = 1
 gffColumnStart = 2
@@ -100,6 +92,7 @@ missingAttrSpecies = 0
 problemLines = 0
 
 for line in f.readlines():
+    print line + "\n"
     if not isComment(line):
         lineNumber = lineNumber + 1
         

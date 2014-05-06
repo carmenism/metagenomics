@@ -6,6 +6,7 @@ import sys
 import buildTaxonomy
 import sqlite3
 import csv
+import dbDef
 
 conn = sqlite3.connect("Metagenomics.db")
 cursor = conn.cursor()
@@ -27,13 +28,18 @@ class Tally:
         self.count = self.count + 1
         
     def toList(self):
-        return [self.taxid, self.name, self.rank, self.count, self.countChild]
+        return [self.taxid, self.name, self.rank, self.count]
 
     def toListAddGenus(self, genus):
-        return [self.taxid, genus + " " + self.name, self.rank, self.count, self.countChild]
+        return [self.taxid, genus + " " + self.name, self.rank, self.count]
+
+def getTaxidFromNCID(cursor, ncid):
+    sql = "SELECT " + dbDef.tblSpecies_col_tax_id.name + " FROM " + dbDef.tblSpecies.name + " WHERE " + dbDef.tblSpecies_col_ncid.name + " = '" + ncid + "';"
+    
+    return buildTaxonomy.getSingleFieldFromSql(cursor, sql)
 
 def createGenusSpeciesFile():
-    genusSpeciesFile = filename + '_speciesGenus.csv'
+    genusSpeciesFile = filename + '_genusSpecies.csv'
     taxidsToDelete = []
     
     with open(genusSpeciesFile, 'wb') as genusSpeciesCsv:
@@ -41,10 +47,10 @@ def createGenusSpeciesFile():
         
         for taxid, tally in organismCount.iteritems():
             if tally.rank == buildTaxonomy.abbrRanks[-1]: #if rank is species
-                genusTax = getParentTaxidFromTaxid(cursor, taxid)
+                #genusTax = buildTaxonomy.getParentTaxidFromTaxid(cursor, taxid)
                 
-                genusName = organismCount[genusTax].name
-                genusSpeciesCsvWriter.writeRow(tally.toListAddGenus(genusName))
+                #genusName = organismCount[genusTax].name
+                genusSpeciesCsvWriter.writerow(tally.toList())
                 
                 taxidsToDelete.append(taxid)
                 
@@ -53,7 +59,13 @@ def createGenusSpeciesFile():
     
     return
  
-def createTaxonomyFile():
+def createTaxonomyFile(level):
+    levelFile = filename + '_' + level + '.csv'
+    taxidsToDelete = []
+    
+    for taxid in taxidsToDelete:
+        del organismCount[taxid]
+    
     
     return
  
@@ -63,18 +75,28 @@ if len(sys.argv) == 1:
 
 for line in readFile.readlines():
     #get the tax id for the species
-    readTaxID = '123'
+    tokens = line.split("\t")
+    ncid = tokens[1]
+    readTaxID = getTaxidFromNCID(cursor, ncid)
     
     #locate in hash map and add one
-    taxonomy = getAbbrTaxonomyFromTaxid(cursor, readTaxID)
+    taxonomy = buildTaxonomy.getAbbrTaxonomyFromTaxid(cursor, readTaxID)
     
     #for each level of taxonomy, add one to its count
     for level in taxonomy: # iterate over all but last item
         (taxid, name, rank) = level
         
+        if readTaxID == '991903':
+            print taxid + " " + name + " " + rank + " "
+
         if taxid not in organismCount:
             organismCount[taxid] = Tally(name, rank, taxid)
         
         organismCount[taxid].increaseCount()
 
 readFile.close()
+
+createGenusSpeciesFile()
+
+conn.commit()
+conn.close()
