@@ -18,23 +18,19 @@ readFile = open(filename, 'r')
 
 class Tally:
     def __init__(self, name, rank, tax):
-        self.countExact = 0
-        self.countChild = 0
+        self.count = 0
         self.name = name
         self.rank = rank
         self.taxid = tax
         
-    def increaseCountExact(self):
-        self.countExact = self.countExact + 1
-    
-    def increaseCountChild(self):
-        self.countChild = self.countChild + 1
+    def increaseCount(self):
+        self.count = self.count + 1
         
     def toList(self):
-        return [self.taxid, self.name, self.rank, self.countExact, self.countChild]
+        return [self.taxid, self.name, self.rank, self.count, self.countChild]
 
     def toListAddGenus(self, genus):
-        return [self.taxid, genus + " " + self.name, self.rank, self.countExact, self.countChild]
+        return [self.taxid, genus + " " + self.name, self.rank, self.count, self.countChild]
 
 def createGenusSpeciesFile():
     genusSpeciesFile = filename + '_speciesGenus.csv'
@@ -54,6 +50,13 @@ def createGenusSpeciesFile():
                 
     for taxid in taxidsToDelete:
         del organismCount[taxid]
+    
+    return
+ 
+def createTaxonomyFile():
+    
+    return
+ 
         
 if len(sys.argv) == 1:
     print "This program requires a file to run"
@@ -66,18 +69,12 @@ for line in readFile.readlines():
     taxonomy = getAbbrTaxonomyFromTaxid(cursor, readTaxID)
     
     #for each level of taxonomy, add one to its count
-    for level in taxonomy[:-1]: # iterate over all but last item
+    for level in taxonomy: # iterate over all but last item
         (taxid, name, rank) = level
         
         if taxid not in organismCount:
             organismCount[taxid] = Tally(name, rank, taxid)
         
-        organismCount[taxid].increaseCountChild()
-    
-    if readTaxID not in organismCount:
-        (taxid, name, rank) = taxonomy[-1]
-        organismCount[readTaxID] = Tally(name, rank, readTaxID)
-    
-    organismCount[readTaxID].increaseCountExact()
+        organismCount[taxid].increaseCount()
 
 readFile.close()
