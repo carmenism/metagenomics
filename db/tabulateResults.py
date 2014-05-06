@@ -64,7 +64,8 @@ def createLevelFile(level):
     #    del organismCount[taxid]
     
     return
- 
+
+logFile = open("tabulateResults.log", "w") 
    
 if len(sys.argv) == 1:
     print "This program requires a file to run"
@@ -73,7 +74,12 @@ for line in readFile.readlines():
     #get the tax id for the species
     tokens = line.split("\t")
     ncid = tokens[1]
+    
     readTaxID = getTaxidFromNCID(cursor, ncid)
+    
+    if readTaxID is None:
+        logFile.write("Problem with line: " + line)
+        continue
     
     #locate in hash map and add one
     taxonomy = buildTaxonomy.getAbbrTaxonomyFromTaxid(cursor, readTaxID)
@@ -97,3 +103,5 @@ for level in buildTaxonomy.abbrRanks:
 
 conn.commit()
 conn.close()
+
+logFile.close()

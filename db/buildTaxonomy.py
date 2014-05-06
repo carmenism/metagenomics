@@ -2,13 +2,18 @@
 import dbDef
 import sqlite3
 
-abbrRanks = ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
+abbrRanks = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"]
 
 def getSingleFieldFromSql(cursor, sql):
     try:
         cursor.execute(sql)
         
-        data = str(cursor.fetchone()[0])
+        cursorResult = cursor.fetchone()
+        
+        if cursorResult is None:
+            return None
+        
+        data = str(cursorResult[0])
         
         return data
     except sqlite3.Error:
