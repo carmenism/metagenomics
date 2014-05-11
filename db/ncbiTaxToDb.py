@@ -29,6 +29,8 @@ If you have just added this file to your computer and this doesn't work,
 then it may be necessary to change the permissions.  On Linux:
 
     chmod u+x ncbiTaxToDb.py
+    
+It is also necessary to have the dbDef.py file in the same directory.
 """
 import os
 import os.path
