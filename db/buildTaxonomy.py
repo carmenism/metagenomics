@@ -17,6 +17,18 @@ Abstract
 --------
 This module allows for easy retrieval of the abbreviated taxonomy for a
 taxonomy ID from the taxonomy database based on the NCBI taxonomy.
+
+Instructions
+------------
+To use in a python script, place this file and dbDef.py in the same directory.
+At the top of your script, add:
+
+    import buildTaxonomy
+    
+Create an sqlite cursor to the metagenomics database and call methods in this
+module like so:
+
+    tax = buildTaxonomy.getAbbrTaxonomyFromTaxid(cursor, "1234")
 """
 import dbDef
 import sqlite3

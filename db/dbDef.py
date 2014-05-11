@@ -16,7 +16,20 @@ April 15, 2014
 Abstract
 --------
 This module defines table names and column names for the metagenomics database
-based on the reference file and the NCBI taxonomy.  
+based on the reference file and the NCBI taxonomy.
+
+Instructions
+------------
+This module should primarily be used to refer to the names of the tables and
+columns in the metagenomics database.  This makes it so the names can be
+changed in this file if necessary and references elsewhere do not need to be
+modified.  Simply add this line to the top of your script:
+
+    import dbDef
+    
+Then you can refer to the names of the columns and such elsewhere, e.g.:
+
+    sql = "SELECT * FROM " + dbDef.tblSpecies.name
 """
 import sqlite3
 
