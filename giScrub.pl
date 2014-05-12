@@ -1,4 +1,12 @@
 #!/usr/bin/perl -w
+################################################################################
+#giScrub.pl:
+#THIS FILE WAS SCRAPPED EARLY IN PIPELINE DEVELOPMENT AND WAS NOT COMPLETED
+#IT SERVES NO PURPOSE IN OUR PIPELINE, WAS NOT DEBUGGED, AND SHOULD NOT BE USED
+#
+#Created by: Thomas Rossi
+################################################################################
+
 use strict;
 use warnings;
 
