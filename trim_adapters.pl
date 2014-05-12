@@ -2,6 +2,10 @@
 #
 # For each adapter in the adapter file, make one-fourth and one-half fragments.
 #
+# This did not end up in our final pipeline.
+#
+# Carmen St. Jean (crr8@unh.edu)
+#
 # Friday March 14, 2014
 #
 my $usageMsg = q( Usage: trim_adapters adapters_file  );
