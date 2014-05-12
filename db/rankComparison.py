@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-======================
-tabulateResults module
-======================
+=====================
+rankComparison module
+=====================
 
 Authors
 -------
