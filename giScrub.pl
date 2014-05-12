@@ -1,8 +1,11 @@
 #!/usr/bin/perl -w
 ################################################################################
 #giScrub.pl:
-#THIS FILE WAS SCRAPPED EARLY IN PIPELINE DEVELOPMENT AND WAS NOT COMPLETED
-#IT SERVES NO PURPOSE IN OUR PIPELINE, WAS NOT DEBUGGED, AND SHOULD NOT BE USED
+#Takes a file that contains gene information and pulls out the data related to
+#gene NCBI ID and gene function.  This populates a table linking NCBI ID and
+#gene function.
+#
+#THIS SCRIPT WAS SCRAPPED EARLY IN PIPELINE DEVELOPMENT AND WAS NOT COMPLETED
 #
 #Created by: Thomas Rossi
 ################################################################################
@@ -10,14 +13,11 @@
 use strict;
 use warnings;
 
-my $usageMsg = q(   Usage: fastaparse fastafile
+my $usageMsg = q(   Usage: giScrub.pl fastafile
 
-          Extract each sequence from a fastafile into a single string.
-          <do something to the sequence -- this one computes its length
-          and adds it after the sequence name on the header>
+          Extract gene NCBIID and gene function data.
 
-          Output is the revised header and sequence data
-          Output sent to standard output. );
+          Output is a file detailing NCBIID and gene function );
 
 #main
 &checkUsage();              # comment this line if assigning file name above
@@ -30,13 +30,13 @@ open(OUTFILE, ">$filename");
 open ( IN, $seqFile )  or die "Unable to open: ".$seqFile ;
 
 
-# first line better be a sequence header
+# grab the first line and start processing
 my $inLine = <IN>;
 
 while ( $inLine )
 {
    
-   my @lineArr = split ('\|', $inLine);
+   my @lineArr = split ('\|', $inLine); #split line to get individual elements
    
    print "$inLine";
    print OUTFILE "$lineArr[3]$lineArr[4]";
